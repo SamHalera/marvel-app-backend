@@ -13,11 +13,6 @@ router.post(
   isAuthenticated,
   async (req: RequestExtended, res: Response) => {
     try {
-      //PARAMS ACCEPTED AND OPTIONAL:
-      //limit => between 1 and 100
-      //skip => number of results to ignore
-      //name => search a character by name
-
       const { name, skip, token } = req.body;
 
       let query = "";
@@ -88,13 +83,62 @@ router.get("/character/:id", isAuthenticated, async (req, res) => {
 router.post("/official/characters", async (req, res) => {
   try {
     const authQueryParams = prepareAuthQueryForFetch();
+
+    const { offset, count } = req.body;
+
+    let optionsQuery = "";
+    if (offset && offset > 0) {
+      const offsetValue = offset * count - count;
+      optionsQuery = `&offset=${offsetValue}`;
+    }
+
     const response = await fetch(
-      `${process.env.MARVEL_API_URL}/characters?${authQueryParams}&limit=20`
+      `${process.env.MARVEL_API_URL}/characters?${authQueryParams}${optionsQuery}`
     );
 
     const { data, attributionHTML } = await response.json();
 
     res.status(200).json({ data, attributionHTML });
+  } catch (error: any) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+});
+router.post("/official/characters/:id", async (req, res) => {
+  try {
+    const authQueryParams = prepareAuthQueryForFetch();
+
+    const { id } = req.params;
+
+    const response = await fetch(
+      `${process.env.MARVEL_API_URL}/characters/${id}?${authQueryParams}`
+    );
+
+    const { data, attributionHTML } = await response.json();
+
+    const { results } = data;
+    const character = results[0];
+    res.status(200).json({ ...results[0] });
+  } catch (error: any) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.post("/official/additionalItems-by-entity", async (req, res) => {
+  try {
+    const authQueryParams = prepareAuthQueryForFetch();
+
+    const { resourceURI, label } = req.body;
+
+    const response = await fetch(`${resourceURI}?${authQueryParams}`);
+
+    const { data } = await response.json();
+
+    const { results } = data;
+    const additionalItem = results[0];
+    const { id, title, thumbnail } = additionalItem;
+    res.status(200).json({ id, title, thumbnail });
   } catch (error: any) {
     console.log(error);
     res.status(500).json({ message: error.message });

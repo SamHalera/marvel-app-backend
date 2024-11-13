@@ -4,6 +4,7 @@ import { Favorite } from "../models/Favorites";
 
 import { RequestExtended } from "../types/types";
 import { isAuthenticated } from "../middelware/isAuthenticated";
+import { prepareAuthQueryForFetch } from "../utils/officialApiHelpers";
 export const router = express.Router();
 
 router.post(
@@ -139,3 +140,50 @@ router.get(
     }
   }
 );
+
+///////OFFICIAL MARVEL API /////////
+
+router.post("/official/comics", async (req, res) => {
+  try {
+    const authQueryParams = prepareAuthQueryForFetch();
+
+    const { offset, count } = req.body;
+
+    let optionsQuery = "";
+    if (offset && offset > 0) {
+      const offsetValue = offset * count - count;
+      optionsQuery = `&offset=${offsetValue}`;
+    }
+
+    const response = await fetch(
+      `${process.env.MARVEL_API_URL}/comics?${authQueryParams}${optionsQuery}&limit=100`
+    );
+
+    const { data, attributionHTML } = await response.json();
+
+    res.status(200).json({ data, attributionHTML });
+  } catch (error: any) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+});
+router.post("/official/comics/:id", async (req, res) => {
+  try {
+    const authQueryParams = prepareAuthQueryForFetch();
+
+    const { id } = req.params;
+
+    const response = await fetch(
+      `${process.env.MARVEL_API_URL}/comics/${id}?${authQueryParams}`
+    );
+
+    const { data, attributionHTML } = await response.json();
+
+    const { results } = data;
+    const character = results[0];
+    res.status(200).json({ ...results[0] });
+  } catch (error: any) {
+    console.log(error);
+    res.status(500).json({ message: error.message });
+  }
+});

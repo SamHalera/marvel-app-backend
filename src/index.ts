@@ -35,7 +35,6 @@ app.use(favoriteRouter);
 
 mongoose.connect(process.env.MONGODB_URI ?? "");
 
-//HOME PAGE we get comics and characters limit to 20 itemz each
 app.get("/", async (req, res) => {
   try {
     const { limit } = req.query;
