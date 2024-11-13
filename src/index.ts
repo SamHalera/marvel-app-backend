@@ -84,5 +84,5 @@ app.all("*", (req: Request, res: Response) => {
 });
 
 app.listen(process.env.PORT, () => {
-  console.log("Serverd started...");
+  console.log("Serverd started new deploy...");
 });
