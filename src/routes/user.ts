@@ -80,23 +80,22 @@ router.post("/user/signup", async (req: Request, res: Response) => {
       return res.status(400).json({ message: "All fields are required!" });
     }
 
-    //verify if email already exists in DB
     const existingUser = await User.findOne({ email: email });
-    //If user exists we send an error message
+    if (existingUser && existingUser.username === "Visitor") {
+      console.log("visitor exist");
+      await User.deleteOne({ _id: existingUser._id });
+    }
+
     if (existingUser !== null) {
       return res.status(409).json({ message: "This email already exists!" });
     }
 
-    //create a salt of 16 characters
     const salt = uid2(16);
 
-    // Create a hash with password string and sall string
     const hash = SHA256(password + salt).toString(encBase64);
 
-    //create a token
     const token = uid2(64);
 
-    //create an User instance
     const newUser = new User({
       email,
       username,
@@ -105,7 +104,6 @@ router.post("/user/signup", async (req: Request, res: Response) => {
       salt,
     });
 
-    //persist new user in DB
     await newUser.save();
 
     res.status(201).json({
@@ -116,7 +114,6 @@ router.post("/user/signup", async (req: Request, res: Response) => {
   }
 });
 
-//LOGIN
 router.post("/user/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -133,28 +130,19 @@ router.post("/user/login", async (req, res) => {
       return res.status(401).json({ message: "Unauthorized!" });
     }
 
-    //Je compare le hash du user en BD avec le hash du req.body.password + user.salt
     const newHash = SHA256(password + user.salt).toString(encBase64);
     if (newHash !== user.hash) {
-      //statyus 401 unauthorized
       return res.status(401).json({ message: "Unauthorized!" });
     }
 
-    //if User is OK
-
     res.status(200).json({
-      //   _id: user._id,
       token: user.token,
-      //   email: user.email,
-      //   username: user.username,
-      // avatar: user.avatar?.secure_url,
     });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 });
 
-//GET USER FROM ID
 router.get(
   "/user/profile",
   isAuthenticated,
@@ -170,7 +158,7 @@ router.get(
     }
   }
 );
-//GET USER FROM ID
+
 router.get(
   "/user/avatar",
   isAuthenticated,
@@ -187,8 +175,6 @@ router.get(
   }
 );
 
-//UPDATE USER INFOS (picture, username, password)
-// router.put("/profile", isAuthenticated, fileUpload(), async (req, res) => {
 router.post(
   "/user/profile",
   isAuthenticated,
@@ -203,9 +189,6 @@ router.post(
         return res.status(401).json({ message: "Unauthorized!" });
       }
 
-      //if we detect changes in request we pass throught all checks and finally we save the new user
-      //   if (username || (password && newPassword) || req.files) {
-      //   if (username || (password && newPassword)) {
       if (username) {
         user.username = username;
       }
@@ -235,7 +218,6 @@ router.post(
         let previousPublicId;
 
         if (!user.avatar) {
-          //create folder for marvel project > users
           const userFolder = await cloudinary.api.create_folder(
             `/marvel/users/${user._id}`
           );
@@ -255,10 +237,8 @@ router.post(
           { folder: userFolderPath }
         );
 
-        //new picture replaced the previous for user object
         user.avatar = pictureToSave;
 
-        //New picture is uploaded with success in CLoudinary. We can delete the old one
         if (previousPublicId) {
           await cloudinary.uploader.destroy(previousPublicId, {
             folder: userFolderPath,
@@ -267,7 +247,6 @@ router.post(
       }
 
       await user.save();
-      //   }
 
       return res.status(200).json({
         email: user.email,
