@@ -54,10 +54,10 @@ exports.router.post("/characters", isAuthenticated_1.isAuthenticated, (req, res)
                 }
             }
         }
-        res.status(200).json({ data });
+        res.status(200).json(data);
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ error: 500, message: error.message });
     }
 }));
 exports.router.get("/character/:id", isAuthenticated_1.isAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {

@@ -58,7 +58,7 @@ router.get(
 
       res.status(200).json(arrayOfFavorites);
     } catch (error: any) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ error: 500, message: error.message });
     }
   }
 );

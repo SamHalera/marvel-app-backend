@@ -55,7 +55,7 @@ app.get("/", async (req, res) => {
     res.status(200).json(arrayOfData);
   } catch (error: any) {
     console.log(error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: 500, message: error.message });
   }
 });
 

@@ -62,7 +62,7 @@ router.post(
       res.status(200).json(data);
     } catch (error: any) {
       console.log("error");
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ error: 500, message: error.message });
     }
   }
 );
@@ -101,7 +101,7 @@ router.post(
 
       res.status(200).json(character);
     } catch (error: any) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ error: 500, message: error.message });
     }
   }
 );
@@ -148,7 +148,7 @@ router.get(
 
       res.status(200).json({ comic, charactersForComicId });
     } catch (error: any) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ error: 500, message: error.message });
     }
   }
 );

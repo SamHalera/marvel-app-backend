@@ -54,7 +54,7 @@ app.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (error) {
         console.log(error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ error: 500, message: error.message });
     }
 }));
 app.post("/test/characters", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -64,7 +64,6 @@ app.post("/test/characters", (req, res) => __awaiter(void 0, void 0, void 0, fun
         const publicMarvelAPIKey = process.env.MARVEL_PUBLIC_KEY;
         const hash = (0, crypto_js_1.MD5)(`${timestamp}${privateMarvelAPIKey}${publicMarvelAPIKey}`);
         const response = yield fetch(`${process.env.MARVEL_API_URL}/characters?ts=${timestamp}&apikey=${publicMarvelAPIKey}&hash=${hash}&limit=20`);
-        console.log(process.env.MARVEL_API_URL);
         const { data, attributionHTML } = yield response.json();
         res.status(200).json({ data, attributionHTML });
     }
