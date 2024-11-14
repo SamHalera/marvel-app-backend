@@ -266,7 +266,7 @@ router.delete(
       const userId = req.user._id;
 
       const username = req.user.username;
-      console.log(username);
+
       if (username === "Visitor") {
         const favoritesByUserId = await Favorite.find({ user: userId });
 

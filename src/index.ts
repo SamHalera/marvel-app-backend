@@ -69,7 +69,6 @@ app.post("/test/characters", async (req, res) => {
       `${process.env.MARVEL_API_URL}/characters?ts=${timestamp}&apikey=${publicMarvelAPIKey}&hash=${hash}&limit=20`
     );
 
-    console.log(process.env.MARVEL_API_URL);
     const { data, attributionHTML } = await response.json();
 
     res.status(200).json({ data, attributionHTML });
