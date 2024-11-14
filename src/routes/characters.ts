@@ -13,6 +13,7 @@ router.post(
   isAuthenticated,
   async (req: RequestExtended, res: Response) => {
     try {
+      console.log("api");
       const { name, skip, token } = req.body;
       let query = "";
       let limitForQuery = 100;
@@ -57,7 +58,7 @@ router.post(
 
       res.status(200).json(data);
     } catch (error: any) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ error: 500, message: error.message });
     }
   }
 );

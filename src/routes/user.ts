@@ -23,11 +23,13 @@ router.post("/user/forgotten-password", async (req: Request, res: Response) => {
     const { email } = req.body;
     const user = await User.findOne({ email: email });
     if (!user) {
-      return res.status(401).json({ message: "Unauthotized!" });
+      return res.status(401).json({ error: 401, message: "Unauthotized!" });
     }
 
     if (!process.env.FRONT_URL) {
-      return res.status(401).json({ error: "FRONT URL IS MISSING!" });
+      return res
+        .status(401)
+        .json({ error: 401, message: "FRONT URL IS MISSING!" });
     }
 
     const emailTemplateId = 1;
@@ -45,7 +47,7 @@ router.post("/user/forgotten-password", async (req: Request, res: Response) => {
 
     return res.status(201).json({ success: "Email has been sent" });
   } catch (error) {
-    res.status(500).json({ message: error });
+    res.status(500).json({ error: 500, message: error });
   }
 });
 
@@ -53,11 +55,13 @@ router.post("/user/reset-password", async (req: Request, res: Response) => {
   try {
     const { password, token } = req.body;
     if (!password) {
-      return res.status(400).json({ message: "This fiel is required!" });
+      return res
+        .status(400)
+        .json({ error: 400, message: "This fiel is required!" });
     }
     const user = await User.findOne({ token: token });
     if (!user) {
-      return res.status(401).json({ message: "UnAthourized" });
+      return res.status(401).json({ error: 400, message: "UnAthourized" });
     }
     const salt = uid2(16);
 
@@ -68,7 +72,7 @@ router.post("/user/reset-password", async (req: Request, res: Response) => {
     await user.save();
     res.status(200).json({ success: "Reset successfully!" });
   } catch (error) {
-    res.status(500).json({ message: error });
+    res.status(500).json({ error: 500, message: error });
   }
 });
 
@@ -77,7 +81,9 @@ router.post("/user/signup", async (req: Request, res: Response) => {
     const { email, password, username } = req.body;
 
     if (!email || !password || !username) {
-      return res.status(400).json({ message: "All fields are required!" });
+      return res
+        .status(400)
+        .json({ error: 400, message: "All fields are required!" });
     }
 
     const existingUser = await User.findOne({ email: email });
@@ -86,7 +92,9 @@ router.post("/user/signup", async (req: Request, res: Response) => {
     }
 
     if (existingUser !== null) {
-      return res.status(409).json({ message: "This email already exists!" });
+      return res
+        .status(409)
+        .json({ error: 409, message: "This email already exists!" });
     }
 
     const salt = uid2(16);
@@ -109,7 +117,7 @@ router.post("/user/signup", async (req: Request, res: Response) => {
       token: newUser.token,
     });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: 500, message: error.message });
   }
 });
 
@@ -118,27 +126,27 @@ router.post("/user/login", async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({
-        message: "All fields are required!",
-      });
+      return res
+        .status(400)
+        .json({ error: 400, message: "All fields are required!" });
     }
 
     const user = await User.findOne({ email: email });
 
     if (user === null) {
-      return res.status(401).json({ message: "Unauthorized!" });
+      return res.status(401).json({ error: 401, message: "Unauthorized!" });
     }
 
     const newHash = SHA256(password + user.salt).toString(encBase64);
     if (newHash !== user.hash) {
-      return res.status(401).json({ message: "Unauthorized!" });
+      return res.status(401).json({ error: 401, message: "Unauthorized!" });
     }
 
     res.status(200).json({
       token: user.token,
     });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: 500, message: error.message });
   }
 });
 
@@ -153,7 +161,7 @@ router.get(
 
       return res.status(200).json(user);
     } catch (error: any) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ error: 500, message: error.message });
     }
   }
 );
@@ -169,7 +177,7 @@ router.get(
 
       return res.status(200).json(user);
     } catch (error: any) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ error: 500, message: error.message });
     }
   }
 );
@@ -185,7 +193,7 @@ router.post(
       const user = await User.findById({ _id: req.user._id });
 
       if (user === null) {
-        return res.status(401).json({ message: "Unauthorized!" });
+        return res.status(401).json({ error: 401, message: "Unauthorized!" });
       }
 
       if (username) {
@@ -193,7 +201,7 @@ router.post(
       }
       if (!password && newPassword) {
         return res.status(400).json({
-          error: "password",
+          error: 400,
           message: "It seems you forget to enter your current password",
         });
       } else {
@@ -202,7 +210,7 @@ router.post(
           if (newHash !== user.hash) {
             return res
               .status(400)
-              .json({ type: "error", message: "Invalid credentials" });
+              .json({ error: 400, message: "Invalid credentials" });
           } else {
             const salt = uid2(16);
             const hash = SHA256(newPassword + salt).toString(encBase64);
@@ -253,7 +261,7 @@ router.post(
         avatar: user.avatar,
       });
     } catch (error: any) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ error: 500, message: error.message });
     }
   }
 );
@@ -279,7 +287,7 @@ router.delete(
       }
       return res.status(200).json();
     } catch (error: any) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ error: 500, message: error.message });
     }
   }
 );
