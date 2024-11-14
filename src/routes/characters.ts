@@ -14,9 +14,7 @@ router.post(
   async (req: RequestExtended, res: Response) => {
     try {
       const { name, skip, token } = req.body;
-
       let query = "";
-
       let limitForQuery = 100;
       if (name || skip) {
         if (name) {
@@ -57,7 +55,7 @@ router.post(
         }
       }
 
-      res.status(200).json({ data });
+      res.status(200).json(data);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

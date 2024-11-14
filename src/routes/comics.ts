@@ -5,6 +5,7 @@ import { Favorite } from "../models/Favorites";
 import { RequestExtended } from "../types/types";
 import { isAuthenticated } from "../middelware/isAuthenticated";
 import { prepareAuthQueryForFetch } from "../utils/officialApiHelpers";
+import { formatCharactersArrayByComicId } from "../utils/dataFormat";
 export const router = express.Router();
 
 router.post(
@@ -118,8 +119,19 @@ router.get(
         `https://lereacteur-marvel-api.herokuapp.com/comic/${id}?apiKey=${process.env.API_KEY}`
       );
 
-      const data = await response.json();
-      const comic = data;
+      const charactersResponse = await fetch(
+        `https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=${process.env.API_KEY}`
+      );
+
+      const comic = await response.json();
+
+      const characters = await charactersResponse.json();
+
+      const charactersForComicId = formatCharactersArrayByComicId(
+        characters,
+        comic._id
+      );
+
       if (user) {
         const favorite = await Favorite.findOne({
           user: user._id,
@@ -134,7 +146,7 @@ router.get(
         }
       }
 
-      res.status(200).json(comic);
+      res.status(200).json({ comic, charactersForComicId });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

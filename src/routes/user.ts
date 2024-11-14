@@ -82,7 +82,6 @@ router.post("/user/signup", async (req: Request, res: Response) => {
 
     const existingUser = await User.findOne({ email: email });
     if (existingUser && existingUser.username === "Visitor") {
-      console.log("visitor exist");
       await User.deleteOne({ _id: existingUser._id });
     }
 

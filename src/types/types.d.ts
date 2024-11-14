@@ -5,6 +5,11 @@ export interface RequestExtended extends Request {
   user?: User;
 }
 
+export type CharactersType = {
+  count: number;
+  limit: number;
+  results: CharacterItemArray[];
+};
 export interface CloudinaryFile {
   asset_id: string;
   public_id: string;
