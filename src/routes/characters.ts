@@ -13,7 +13,6 @@ router.post(
   isAuthenticated,
   async (req: RequestExtended, res: Response) => {
     try {
-      console.log("api");
       const { name, skip, token } = req.body;
       let query = "";
       let limitForQuery = 100;
