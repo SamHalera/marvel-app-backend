@@ -56,7 +56,7 @@ exports.router.get("/favorites", isAuthenticated_1.isAuthenticated, (req, res) =
         res.status(200).json(arrayOfFavorites);
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ error: 500, message: error.message });
     }
 }));
 //persiste a favorite (character or comics) in db

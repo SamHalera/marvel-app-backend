@@ -30,10 +30,12 @@ exports.router.post("/user/forgotten-password", (req, res) => __awaiter(void 0, 
         const { email } = req.body;
         const user = yield User_1.User.findOne({ email: email });
         if (!user) {
-            return res.status(401).json({ message: "Unauthotized!" });
+            return res.status(401).json({ error: 401, message: "Unauthotized!" });
         }
         if (!process.env.FRONT_URL) {
-            return res.status(401).json({ error: "FRONT URL IS MISSING!" });
+            return res
+                .status(401)
+                .json({ error: 401, message: "FRONT URL IS MISSING!" });
         }
         const emailTemplateId = 1;
         const paramsForBrevo = {
@@ -49,18 +51,20 @@ exports.router.post("/user/forgotten-password", (req, res) => __awaiter(void 0, 
         return res.status(201).json({ success: "Email has been sent" });
     }
     catch (error) {
-        res.status(500).json({ message: error });
+        res.status(500).json({ error: 500, message: error });
     }
 }));
 exports.router.post("/user/reset-password", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { password, token } = req.body;
         if (!password) {
-            return res.status(400).json({ message: "This fiel is required!" });
+            return res
+                .status(400)
+                .json({ error: 400, message: "This fiel is required!" });
         }
         const user = yield User_1.User.findOne({ token: token });
         if (!user) {
-            return res.status(401).json({ message: "UnAthourized" });
+            return res.status(401).json({ error: 400, message: "UnAthourized" });
         }
         const salt = (0, uid2_1.default)(16);
         const hash = (0, sha256_1.default)(password + salt).toString(enc_base64_1.default);
@@ -70,22 +74,25 @@ exports.router.post("/user/reset-password", (req, res) => __awaiter(void 0, void
         res.status(200).json({ success: "Reset successfully!" });
     }
     catch (error) {
-        res.status(500).json({ message: error });
+        res.status(500).json({ error: 500, message: error });
     }
 }));
 exports.router.post("/user/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password, username } = req.body;
         if (!email || !password || !username) {
-            return res.status(400).json({ message: "All fields are required!" });
+            return res
+                .status(400)
+                .json({ error: 400, message: "All fields are required!" });
         }
         const existingUser = yield User_1.User.findOne({ email: email });
         if (existingUser && existingUser.username === "Visitor") {
-            console.log("visitor exist");
             yield User_1.User.deleteOne({ _id: existingUser._id });
         }
         if (existingUser !== null) {
-            return res.status(409).json({ message: "This email already exists!" });
+            return res
+                .status(409)
+                .json({ error: 409, message: "This email already exists!" });
         }
         const salt = (0, uid2_1.default)(16);
         const hash = (0, sha256_1.default)(password + salt).toString(enc_base64_1.default);
@@ -103,31 +110,31 @@ exports.router.post("/user/signup", (req, res) => __awaiter(void 0, void 0, void
         });
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ error: 500, message: error.message });
     }
 }));
 exports.router.post("/user/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
-            return res.status(400).json({
-                message: "All fields are required!",
-            });
+            return res
+                .status(400)
+                .json({ error: 400, message: "All fields are required!" });
         }
         const user = yield User_1.User.findOne({ email: email });
         if (user === null) {
-            return res.status(401).json({ message: "Unauthorized!" });
+            return res.status(401).json({ error: 401, message: "Unauthorized!" });
         }
         const newHash = (0, sha256_1.default)(password + user.salt).toString(enc_base64_1.default);
         if (newHash !== user.hash) {
-            return res.status(401).json({ message: "Unauthorized!" });
+            return res.status(401).json({ error: 401, message: "Unauthorized!" });
         }
         res.status(200).json({
             token: user.token,
         });
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ error: 500, message: error.message });
     }
 }));
 exports.router.get("/user/profile", isAuthenticated_1.isAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -136,7 +143,7 @@ exports.router.get("/user/profile", isAuthenticated_1.isAuthenticated, (req, res
         return res.status(200).json(user);
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ error: 500, message: error.message });
     }
 }));
 exports.router.get("/user/avatar", isAuthenticated_1.isAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -145,7 +152,7 @@ exports.router.get("/user/avatar", isAuthenticated_1.isAuthenticated, (req, res)
         return res.status(200).json(user);
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ error: 500, message: error.message });
     }
 }));
 exports.router.post("/user/profile", isAuthenticated_1.isAuthenticated, (0, express_fileupload_1.default)(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -153,14 +160,14 @@ exports.router.post("/user/profile", isAuthenticated_1.isAuthenticated, (0, expr
     try {
         const user = yield User_1.User.findById({ _id: req.user._id });
         if (user === null) {
-            return res.status(401).json({ message: "Unauthorized!" });
+            return res.status(401).json({ error: 401, message: "Unauthorized!" });
         }
         if (username) {
             user.username = username;
         }
         if (!password && newPassword) {
             return res.status(400).json({
-                error: "password",
+                error: 400,
                 message: "It seems you forget to enter your current password",
             });
         }
@@ -170,7 +177,7 @@ exports.router.post("/user/profile", isAuthenticated_1.isAuthenticated, (0, expr
                 if (newHash !== user.hash) {
                     return res
                         .status(400)
-                        .json({ type: "error", message: "Invalid credentials" });
+                        .json({ error: 400, message: "Invalid credentials" });
                 }
                 else {
                     const salt = (0, uid2_1.default)(16);
@@ -211,14 +218,13 @@ exports.router.post("/user/profile", isAuthenticated_1.isAuthenticated, (0, expr
         });
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ error: 500, message: error.message });
     }
 }));
 exports.router.delete("/user/delete", isAuthenticated_1.isAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.user._id;
         const username = req.user.username;
-        console.log(username);
         if (username === "Visitor") {
             const favoritesByUserId = yield Favorites_1.Favorite.find({ user: userId });
             if (favoritesByUserId) {
@@ -231,6 +237,6 @@ exports.router.delete("/user/delete", isAuthenticated_1.isAuthenticated, (req, r
         return res.status(200).json();
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ error: 500, message: error.message });
     }
 }));
