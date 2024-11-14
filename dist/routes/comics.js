@@ -17,6 +17,7 @@ const express_1 = __importDefault(require("express"));
 const Favorites_1 = require("../models/Favorites");
 const isAuthenticated_1 = require("../middelware/isAuthenticated");
 const officialApiHelpers_1 = require("../utils/officialApiHelpers");
+const dataFormat_1 = require("../utils/dataFormat");
 exports.router = express_1.default.Router();
 exports.router.post("/comics", isAuthenticated_1.isAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -58,7 +59,7 @@ exports.router.post("/comics", isAuthenticated_1.isAuthenticated, (req, res) => 
     }
     catch (error) {
         console.log("error");
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ error: 500, message: error.message });
     }
 }));
 //GET COMICS BY CHARACTHER ID
@@ -85,7 +86,7 @@ exports.router.post("/comics/:characterId", isAuthenticated_1.isAuthenticated, (
         res.status(200).json(character);
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ error: 500, message: error.message });
     }
 }));
 exports.router.get("/comic/:id", isAuthenticated_1.isAuthenticated, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -93,8 +94,10 @@ exports.router.get("/comic/:id", isAuthenticated_1.isAuthenticated, (req, res) =
         const { id } = req.params;
         const user = req.user;
         const response = yield fetch(`https://lereacteur-marvel-api.herokuapp.com/comic/${id}?apiKey=${process.env.API_KEY}`);
-        const data = yield response.json();
-        const comic = data;
+        const charactersResponse = yield fetch(`https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=${process.env.API_KEY}`);
+        const comic = yield response.json();
+        const characters = yield charactersResponse.json();
+        const charactersForComicId = (0, dataFormat_1.formatCharactersArrayByComicId)(characters, comic._id);
         if (user) {
             const favorite = yield Favorites_1.Favorite.findOne({
                 user: user._id,
@@ -107,10 +110,10 @@ exports.router.get("/comic/:id", isAuthenticated_1.isAuthenticated, (req, res) =
                 comic["isFavorite"] = true;
             }
         }
-        res.status(200).json(comic);
+        res.status(200).json({ comic, charactersForComicId });
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ error: 500, message: error.message });
     }
 }));
 ///////OFFICIAL MARVEL API /////////
